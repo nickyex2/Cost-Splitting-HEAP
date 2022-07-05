@@ -32,9 +32,17 @@ keyboard = [
 yes_button = "Yes"
 no_button = "No"
 
-def afterImage(update: Update, context: CallbackContext):
+# /start command
+def start(update: Update, context: CallbackContext):
     split_buttons = [[KeyboardButton(splitEven)], [KeyboardButton(splitSpecifically)]]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, I am cost split bot! Please send in a picture of your receipt!", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
+
+def photo(update, context):
+    file_path = context.bot.get_file(update.message.document.file_id)
+    telegram_file_link = f"https://api.telegram.org/file/bot<{TOKEN}>/<{file_path}>"
+    with open(telegram_file_link, 'w'):
+        # To input image recognition function here
+        return
 
 def get_num(update, context: CallbackContext):
     decision = update.message.text
@@ -79,7 +87,7 @@ def main():
     dispatcher = updater.dispatcher
 
     # Add /start handler
-    dispatcher.add_handler(CommandHandler("start", afterImage))
+    dispatcher.add_handler(CommandHandler("start", start))
 
     # Add Split Evenly handler
     dispatcher.add_handler(MessageHandler(Filters.text, get_num))
@@ -102,33 +110,3 @@ def main():
 
 if __name__=="__main__":
     main()
-
-# Input image
-
-# Returns dictionary of information
-
-# return receipt_info{
-# "receiptID" : 22, 
-# "item_dict": {apple: 1, banana: 1, carrot:1}, 
-# "quantity_list": [1, 1, 1],
-# "price_list": [1, 2, 3],
-# "total_cost": 6
-# }
-
-# Split dictionary into variables
-# def split_info(receipt_info):
-#     receiptID = receipt_info[0]
-#     item_dict = receipt_info[1]
-#     quantity_list = receipt_info[2]
-#     price_list = receipt_info[3]
-#     total_cost = receipt_info[4]
-
-#     return receiptID, item_dict, quantity_list, price_list, total_cost
-
-# # Get number of people to split 
-# def split_equally(message):
-#     num_to_split = message
-
-
-# # Create dictionary of items and numbers
-# def item_dictionary(item_list, quantity_list)
