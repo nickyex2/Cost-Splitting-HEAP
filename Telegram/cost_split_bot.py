@@ -1,11 +1,13 @@
 from ast import Call
 import os
+from turtle import Turtle
 from dotenv import load_dotenv
 from telegram import *
 from telegram import replymarkup
 from telegram.ext import *
 import logging
 from requests import *
+import tesseract_func
 
 load_dotenv("./.env")
 TOKEN = os.getenv("token")
@@ -13,60 +15,63 @@ TOKEN = os.getenv("token")
 print("Bot started!")
 
 logging.basicConfig(
-format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
 )
 
 logger = logging.getLogger(__name__)
 
-splitEven = "Split Evenly"
-splitSpecifically = "Split Specifically"
+receipt_total = 0
 
-keyboard = [
-    ['7', '8', '9'],
-    ['4', '5', '6'],
-    ['1', '2', '3'],
-         ['0']
-]
+split_buttons = [[KeyboardButton("Split Evenly")], [KeyboardButton("Split Specifically")]]
 
-yes_button = "Yes"
-no_button = "No"
+num_keyboard = [[KeyboardButton("7"),KeyboardButton("8"),KeyboardButton("9")],
+                [KeyboardButton("4"),KeyboardButton("5"),KeyboardButton("6")],
+                [KeyboardButton("1"),KeyboardButton("2"),KeyboardButton("3")],
+                                        [KeyboardButton("0")]]
 
 # /start command
 def start(update: Update, context: CallbackContext):
-    split_buttons = [[KeyboardButton(splitEven)], [KeyboardButton(splitSpecifically)]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, I am cost split bot! Please send in a picture of your receipt!", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, I am cost split bot! Please send in a picture of your receipt!")
 
-def photo(update, context):
-    file_path = context.bot.get_file(update.message.document.file_id)
-    telegram_file_link = f"https://api.telegram.org/file/bot<{TOKEN}>/<{file_path}>"
-    with open(telegram_file_link, 'w'):
-        # To input image recognition function here
-        return
+def photo(update, context:CallbackContext):
+    file_path = context.bot.get_file(update.message.photo[-1].file_id)
+    print(file_path)
+    downloaded_file = file_path.download()
+    # telegram_file_link = f"https://api.telegram.org/file/bot<{TOKEN}>/<{file_path}>"
+    output = tesseract_func.read_img(downloaded_file)
+    receipt_total = output['Total']
+    print(receipt_total)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Ok TQ.", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
 
-def get_num(update, context: CallbackContext):
+def get_num(update:Update, context: CallbackContext):
     decision = update.message.text
     if decision == "Split Evenly":
-        num_keyboard = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True, one_time_keyboard=True)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="How many people do you want to split this with?", reply_markup=num_keyboard)
+        # num_keyboard = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True, one_time_keyboard=True)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="How many people do you want to split this with?", reply_markup=ReplyKeyboardMarkup(keyboard=num_keyboard, one_time_keyboard=True))
+        # num = update.message.text
+        print("yo")
     elif decision == "Split Specifically":
         return
 
-def check_numeric(update, context: CallbackContext):
-    reply = update.message.text
-    if reply.isnumeric():
-        return True
-    return False
+# def check_numeric(update:Update, context: CallbackContext):
+#     reply = update.message.text
+#     context.bot.send_message(chat_id=update.effective_chat.id, text="response received!", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
+#     print("Entered check")
+#     if reply.isnumeric():
+#         print("True checked!")
+#         return reply
 
-def not_numeric(update, context: CallbackContext):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="You sent an incorrect input. Please send a numeric input.")
+# def not_numeric(update, context: CallbackContext):
+#     context.bot.send_message(chat_id=update.effective_chat.id, text="You sent an incorrect input. Please send a numeric input.", reply_markup=ReplyKeyboardMarkup(keyboard=num_keyboard, one_time_keyboard=True))
 
-def split_even_by_num(update: Update, context: CallbackContext):
-    split_num = update.message.text
-    # input total here
-    ###final_split = total / split_num
-    confirm_buttons = [[KeyboardButton(yes_button)], [KeyboardButton(no_button)]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your total amount of total will be split among {split_num} person(s). Is this correct?", reply_markup=ReplyKeyboardMarkup(keyboard=confirm_buttons, one_time_keyboard=True))
+def split_even_by_num(update, context:CallbackContext):
+    print('back')
+    split_num = int(update.message.text)
+    print(split_num)
+    final_split = round(receipt_total / split_num, 2)
+    confirm_buttons = [[KeyboardButton("Yes")], [KeyboardButton("No")]]
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your total amount of {receipt_total} will be split among {split_num} person(s). The final split will be {final_split} per person. Is this correct?", reply_markup=ReplyKeyboardMarkup(keyboard=confirm_buttons, one_time_keyboard=True))
     ###return final_split
 
 # Define receive telegram handles to message them
@@ -89,16 +94,20 @@ def main():
     # Add /start handler
     dispatcher.add_handler(CommandHandler("start", start))
 
+    # Process photo
+    dispatcher.add_handler(MessageHandler(Filters.photo, photo))
+
     # Add Split Evenly handler
     dispatcher.add_handler(MessageHandler(Filters.text, get_num))
 
-
-
     # STUCK HERE NEED TO USE get_num TO NEXT MESSAGE STEP #
     # Check if message is numeric
-    while check_numeric==False:
-        not_numeric
-        check_numeric
+    # dispatcher.add_handler(MessageHandler(Filters.text, check_numeric))
+
+    # while check_numeric==False:
+    #     dispatcher.add_handler(MessageHandler(Filters.text, not_numeric))
+    #     dispatcher.add_handler(MessageHandler(Filters.text, check_numeric))
+
     dispatcher.add_handler(MessageHandler(Filters.text, split_even_by_num))
 
     # Add error handling
