@@ -8,6 +8,7 @@ from telegram.ext import *
 import logging
 from requests import *
 import tesseract_func
+import veryfi_func
 
 load_dotenv("./.env")
 TOKEN = os.getenv("token")
@@ -35,12 +36,11 @@ def start(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hello, I am cost split bot! Please send in a picture of your receipt!")
 
 def photo(update, context:CallbackContext):
-    file_path = context.bot.get_file(update.message.photo[-1].file_id)
-    print(file_path)
-    downloaded_file = file_path.download()
-    # telegram_file_link = f"https://api.telegram.org/file/bot<{TOKEN}>/<{file_path}>"
-    output = tesseract_func.read_img(downloaded_file)
-    receipt_total = output['Total']
+    file_dict = context.bot.get_file(update.message.photo[-1].file_id)
+    print(file_dict)
+    downloaded_file = file_dict.download()
+    output = veryfi_func.read_img(downloaded_file)
+    receipt_total = output
     print(receipt_total)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Ok TQ.", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
 
@@ -53,17 +53,6 @@ def get_num(update:Update, context: CallbackContext):
         print("yo")
     elif decision == "Split Specifically":
         return
-
-# def check_numeric(update:Update, context: CallbackContext):
-#     reply = update.message.text
-#     context.bot.send_message(chat_id=update.effective_chat.id, text="response received!", reply_markup=ReplyKeyboardMarkup(keyboard=split_buttons, one_time_keyboard=True))
-#     print("Entered check")
-#     if reply.isnumeric():
-#         print("True checked!")
-#         return reply
-
-# def not_numeric(update, context: CallbackContext):
-#     context.bot.send_message(chat_id=update.effective_chat.id, text="You sent an incorrect input. Please send a numeric input.", reply_markup=ReplyKeyboardMarkup(keyboard=num_keyboard, one_time_keyboard=True))
 
 def split_even_by_num(update, context:CallbackContext):
     print('back')
