@@ -1,6 +1,6 @@
 import veryfi as vf
-import pprint
 
+# this function returns only the total amount (as a float)
 client_id = 'vrfuVyDcjJmYRAohzNAiydaUmjPBcsDEYhmeghV'
 client_secret = 'I4autTxNZobvWkfxN70K41ch3GFrESltjaU6fxNxkbeOd3lbimbNk3pUzVyBOAgNTueczLoY680HPOLCwGLbiaoY1NApBeuEYe7orA1AbpIseXBUBmFfRly0rLoTx8O7'
 username = 'nicholasgbr99'
@@ -11,7 +11,7 @@ def read_img(receipt_file):
 
     categories = ['Food and Beverages']
 
-    json_result = client.process_document(receipt_file, categories) # change this to receipt file
+    json_result = client.process_document(receipt_file, categories) 
     
     return json_result['total']
 
