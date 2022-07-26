@@ -1,0 +1,25 @@
+import veryfi as vf
+
+# this function returns only the total amount (as a float)
+client_id = 'vrfuVyDcjJmYRAohzNAiydaUmjPBcsDEYhmeghV'
+client_secret = 'I4autTxNZobvWkfxN70K41ch3GFrESltjaU6fxNxkbeOd3lbimbNk3pUzVyBOAgNTueczLoY680HPOLCwGLbiaoY1NApBeuEYe7orA1AbpIseXBUBmFfRly0rLoTx8O7'
+username = 'nicholasgbr99'
+api_key = 'ac3f7d62cb41b4666c763c856d3ac32e'
+
+def read_img(receipt_file):
+    client = vf.Client(client_id, client_secret, username, api_key)
+
+    categories = ['Food and Beverages']
+
+    json_result = client.process_document(receipt_file, categories) 
+    
+    return json_result['total']
+
+
+# function to retrieve out all the items individually with quantity and price (advance feature)
+# returns a dictionary of items
+def get_items_and_total(receipt_file):
+    output_dict = {}
+    
+    
+    return output_dict
