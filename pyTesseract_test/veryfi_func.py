@@ -15,3 +15,11 @@ def read_img(receipt_file):
     
     return json_result['total']
 
+
+# function to retrieve out all the items individually with quantity and price (advance feature)
+# returns a dictionary of items
+def get_items_and_total(receipt_file):
+    output_dict = {}
+    
+    
+    return output_dict
