@@ -16,4 +16,8 @@ Input these values into veryfi_func.py according to the variable names in the fi
 
 
 ### Telegram Bot API
+#### Install the following into your system
+<pre><code>pip install python-telegram-bot</pre></code>
 
+#### Obtain token from Botfather on Telegram
+We have provided the token in this sample file, however you would still have to generate your own token from Botfather on Telegram.
