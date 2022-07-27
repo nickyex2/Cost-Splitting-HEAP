@@ -8,7 +8,7 @@ from requests import *
 import veryfi_func
 
 # Obtain Bot Token
-load_dotenv("./.env")
+load_dotenv()
 TOKEN = os.getenv("token")
 
 print("Bot started!")
